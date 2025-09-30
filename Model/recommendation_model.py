@@ -114,9 +114,19 @@ if not movies_df.empty:
     print(f"Similarity matrix shape: {similarity.shape}")
 
     # --- Save Model Assets ---
-    joblib.dump(final_df, 'movies_df.joblib')
-    joblib.dump(similarity, 'similarity.joblib')
+    backend_dir = os.path.join(os.path.dirname(__file__), '..', 'backend')
 
-    print("Model assets saved successfully!")
+    # Create the backend directory if it doesn't exist
+    os.makedirs(backend_dir, exist_ok=True)
+
+    # Define the full file paths
+    movies_df_path = os.path.join(backend_dir, 'movies_df.joblib')
+    similarity_path = os.path.join(backend_dir, 'similarity.joblib')
+
+    # Save the files to the specified paths
+    joblib.dump(final_df, movies_df_path)
+    joblib.dump(similarity, similarity_path)
+
+    print(f"✅ Model assets saved successfully to the '{backend_dir}' directory!")
 else:
     print("Could not fetch movie data. Aborting.")
