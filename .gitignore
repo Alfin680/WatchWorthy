@@ -1,6 +1,4 @@
-Model/venv
 *joblib
-Model/.env
 .env
 venv/
 __pycache__/
