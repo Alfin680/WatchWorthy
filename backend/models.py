@@ -3,18 +3,16 @@ from sqlalchemy.orm import relationship
 from database import Base # Corrected import
 
 class User(Base):
-    """
-    SQLAlchemy model for the 'users' table.
-    """
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
+    email = Column(String, unique=True, index=True) # Add this
+    full_name = Column(String) # Add this
     hashed_password = Column(String)
 
-    # This creates a one-to-many relationship.
-    # The 'watchlist_items' attribute on a User instance will be a list of its WatchlistItem objects.
     watchlist_items = relationship("WatchlistItem", back_populates="owner")
+
 
 class WatchlistItem(Base):
     """

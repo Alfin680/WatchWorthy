@@ -25,16 +25,18 @@ class WatchlistItem(WatchlistItemBase):
 
 class UserBase(BaseModel):
     username: str
+    email: str # Add this
+    full_name: str # Add this
 
 class UserCreate(UserBase):
     password: str
 
 class User(UserBase):
     id: int
-    watchlist_items: List[WatchlistItem] = []
+    watchlist_items: list[WatchlistItem] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True # Updated from orm_mode for Pydantic v2
 
 # ==================================
 # Schemas for Authentication (Tokens)

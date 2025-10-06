@@ -21,7 +21,8 @@ def get_db():
         db.close()
 
 # Setup for password hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+#
+pwd_context = CryptContext(schemes=["argon2", "bcrypt"], deprecated="auto")
 
 
 
