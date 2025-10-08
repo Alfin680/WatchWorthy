@@ -126,7 +126,10 @@ body {
 }
 
 .details-container {
-  overflow: hidden; /* This is key for the slide-in animation */
+  overflow: hidden;
+  position: sticky; /* Add this */
+  top: 20px;        /* Add this - adjust the value as needed */
+  height: 90vh;     /* Add this to define its height for scrolling */
 }
 
 /* The animation magic */
