@@ -56,3 +56,14 @@ def remove_watchlist_item(db: Session, item_id: int, user_id: int):
         db.commit()
         return db_item
     return None
+
+def update_user_password(db: Session, user: models.User, new_password: str):
+    """
+    Updates a user's password with a new hashed password.
+    """
+    hashed_password = get_password_hash(new_password)
+    user.hashed_password = hashed_password
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user

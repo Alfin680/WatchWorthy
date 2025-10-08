@@ -129,12 +129,41 @@ export const getCurrentUser = async () => {
   }
 };
 
-export const searchMovies = async (query) => {
+export const searchMovies = async (query, year = null, genreId = null) => {
   try {
-    const response = await api.get(`/movies/search?query=${encodeURIComponent(query)}`);
+    let url = `/movies/search?query=${encodeURIComponent(query)}`;
+    if (year) {
+      url += `&year=${year}`;
+    }
+    if (genreId) {
+      url += `&genre_id=${genreId}`;
+    }
+    
+    const response = await api.get(url);
     return response.data.results;
   } catch (error) {
     console.error("Failed to search movies:", error);
     return [];
+  }
+};
+
+export const requestPasswordReset = async (email) => {
+  try {
+    const response = await api.post(`/password-recovery/${email}`);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const resetPassword = async (token, newPassword) => {
+  try {
+    const response = await api.post('/reset-password/', {
+      token,
+      new_password: newPassword,
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
   }
 };

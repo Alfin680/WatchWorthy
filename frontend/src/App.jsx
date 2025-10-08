@@ -7,6 +7,8 @@ import WatchlistPage from './pages/WatchlistPage';
 import RecommendationsPage from './pages/RecommendationsPage';
 import SearchPage from './pages/SearchPage';
 import ProtectedRoute from './components/ProtectedRoute'; // Import the new component
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 function App() {
   return (
@@ -16,7 +18,8 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/search" element={<SearchPage />} />
-
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       {/* Protected Routes */}
       <Route
         path="/watchlist"
@@ -34,6 +37,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+      
     </Routes>
   );
 }

@@ -53,6 +53,9 @@ const LoginPage = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          <div style={{ textAlign: 'right', marginTop: '10px' }}>
+            <Link to="/forgot-password" style={{ color: 'var(--color-grey-text)', fontSize: '0.9rem' }}>Forgot Password?</Link>
+          </div>
         </div>
 
         {error && <p style={{ color: 'red' }}>{error}</p>}

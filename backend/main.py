@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Body, Query 
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session 
 import joblib
@@ -146,17 +146,47 @@ def get_user_recommendations(
     )
 
 @app.get("/movies/search")
-def search_movies(query: str):
+def search_movies(
+    query: str,
+    year: int = Query(None, description="Filter by year of release"),
+    genre_id: int = Query(None, description="Filter by genre ID")
+):
     tmdb_api_key = os.getenv("API_KEY")
     if not tmdb_api_key:
         raise HTTPException(status_code=500, detail="TMDB API key not configured")
 
-    url = f"https://api.themoviedb.org/3/search/movie?api_key={tmdb_api_key}&language=en-US&query={query}&page=1&include_adult=false"
-    
+    # Start with the base URL and required parameters
+    base_url = "https://api.themoviedb.org/3/search/movie"
+    params = {
+        "api_key": tmdb_api_key,
+        "language": "en-US",
+        "query": query,
+        "page": 1,
+        "include_adult": False
+    }
+
+    # Add optional parameters if they are provided
+    if year:
+        params["year"] = year
+    if genre_id:
+        # TMDB search doesn't directly filter by genre_id in the search endpoint.
+        # We fetch all results and filter them on our server.
+        pass
+
     try:
-        response = requests.get(url)
+        response = requests.get(base_url, params=params)
         response.raise_for_status()
-        return response.json()
+        data = response.json()
+
+        # If a genre_id is provided, filter the results
+        if genre_id:
+            filtered_results = [
+                movie for movie in data.get("results", []) 
+                if genre_id in movie.get("genre_ids", [])
+            ]
+            data["results"] = filtered_results
+
+        return data
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=502, detail=f"Error fetching from TMDB: {e}")
 
@@ -203,3 +233,40 @@ def get_movie_details(movie_id: int):
         return response.json()
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=502, detail=f"Error fetching from TMDB: {e}")
+    
+@app.post("/password-recovery/{email}")
+def recover_password(email: str, db: Session = Depends(get_db)):
+    user = crud.get_user_by_email(db, email=email)
+    if not user:
+        # Don't reveal that the user does not exist for security reasons
+        # We'll just return a success message
+        return {"msg": "If an account with this email exists, a password reset link has been sent."}
+    
+    password_reset_token = auth.create_password_reset_token(email=email)
+    
+    # In a real app, you would email this link.
+    # For now, we print it to the backend terminal.
+    reset_link = f"http://localhost:5173/reset-password?token={password_reset_token}"
+    print("--- PASSWORD RESET LINK ---")
+    print(reset_link)
+    print("--------------------------")
+
+    return {"msg": "If an account with this email exists, a password reset link has been sent."}
+
+
+@app.post("/reset-password/")
+def reset_password(
+    token: str = Body(...),
+    new_password: str = Body(...),
+    db: Session = Depends(get_db)
+):
+    email = auth.verify_password_reset_token(token)
+    if not email:
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+    
+    user = crud.get_user_by_email(db, email=email)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    crud.update_user_password(db, user, new_password)
+    return {"msg": "Password updated successfully."}    
