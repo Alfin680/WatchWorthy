@@ -42,9 +42,49 @@
 .navbar-user {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 25px;
 }
 
 .navbar-user span {
   font-weight: 500;
+}
+.user-info {
+  text-align: right;
+}
+
+.user-info .full-name {
+  font-weight: 500;
+  display: block; /* Make it a block element */
+}
+
+/* Style the logout button as a link */
+.logout-link {
+  background: none;
+  border: none;
+  color: #E53935; /* Add this line to make it red */
+  padding: 0;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-align: right;
+  display: block;
+  width: 100%;
+}
+
+.logout-link:hover {
+  text-decoration: underline;
+  color: #c62828; /* Optional: A slightly darker red on hover */
+}
+
+/* New styles for the watchlist link */
+.watchlist-link {
+  text-decoration: none;
+  color: inherit;
+  font-weight: 500;
+  padding: 10px 15px;
+  border-radius: 8px;
+  transition: background-color 0.3s;
+}
+
+.watchlist-link:hover {
+  background-color: var(--color-dark-blue);
 }

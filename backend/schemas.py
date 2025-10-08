@@ -33,6 +33,7 @@ class UserCreate(UserBase):
 
 class User(UserBase):
     id: int
+    full_name: str # Ensure this line is present
     watchlist_items: list[WatchlistItem] = []
 
     class Config:

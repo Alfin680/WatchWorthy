@@ -8,6 +8,8 @@ import schemas
 import crud
 import auth
 from database import engine, SessionLocal
+import requests 
+import os
 
 # This line creates the database tables if they don't exist
 models.Base.metadata.create_all(bind=engine)
@@ -101,27 +103,62 @@ def delete_watchlist_item(
         raise HTTPException(status_code=404, detail="Watchlist item not found or you do not have permission to delete it")
     return db_item
 
-@app.get("/recommendations/{movie_title}")
-def get_recommendations(movie_title: str):
+# === RECOMMENDATION ENDPOINT ===
+@app.get("/recommendations/")
+def get_user_recommendations(
+    db: Session = Depends(auth.get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    # Fetch the user's entire watchlist, ordered by most recent
+    user_watchlist = db.query(models.WatchlistItem).filter(
+        models.WatchlistItem.owner_id == current_user.id
+    ).order_by(models.WatchlistItem.id.desc()).all()
+
+    if not user_watchlist:
+        raise HTTPException(status_code=404, detail="Watchlist is empty.")
+
     if movies is None or similarity is None:
-        raise HTTPException(status_code=503, detail="Model is not available. Please check server logs.")
+        raise HTTPException(status_code=503, detail="Model is not available.")
 
-    matching_movies = movies[movies['title'] == movie_title]
-    if matching_movies.empty:
-        raise HTTPException(status_code=404, detail=f"Movie '{movie_title}' not found in the dataset.")
+    # Iterate through the watchlist to find a movie in our ML dataset
+    for item in user_watchlist:
+        matching_movies = movies[movies['title'] == item.movie_title]
+        if not matching_movies.empty:
+            movie_index = matching_movies.index[0]
+            source_movie_title = item.movie_title
+            
+            # Found a match, now generate recommendations
+            distances = similarity[movie_index]
+            movies_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])[1:6]
 
-    movie_index = matching_movies.index[0]
+            recommended_movies = []
+            for i in movies_list:
+                rec_id = movies.iloc[i[0]].id
+                rec_title = movies.iloc[i[0]].title
+                recommended_movies.append({"id": int(rec_id), "title": rec_title})
+            
+            return {"source_movie": source_movie_title, "recommendations": recommended_movies}
 
-    distances = similarity[movie_index]
-    movies_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])[1:6]
+    # If no movie in the watchlist was found in the dataset
+    raise HTTPException(
+        status_code=404,
+        detail="Could not find any of your watchlist movies in our recommendation dataset."
+    )
 
-    recommended_movies = []
-    for i in movies_list:
-        movie_id = movies.iloc[i[0]].id
-        title = movies.iloc[i[0]].title
-        recommended_movies.append({"id": int(movie_id), "title": title})
+@app.get("/movies/search")
+def search_movies(query: str):
+    tmdb_api_key = os.getenv("API_KEY")
+    if not tmdb_api_key:
+        raise HTTPException(status_code=500, detail="TMDB API key not configured")
 
-    return {"source_movie": movie_title, "recommendations": recommended_movies}
+    url = f"https://api.themoviedb.org/3/search/movie?api_key={tmdb_api_key}&language=en-US&query={query}&page=1&include_adult=false"
+    
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=502, detail=f"Error fetching from TMDB: {e}")
 
 @app.post("/token", response_model=schemas.Token)
 def login_for_access_token(db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()):
@@ -136,3 +173,33 @@ def login_for_access_token(db: Session = Depends(get_db), form_data: OAuth2Passw
         data={"sub": user.username}
     )
     return {"access_token": access_token, "token_type": "bearer"}
+
+@app.get("/movies/popular")
+def get_popular_movies():
+    tmdb_api_key = os.getenv("API_KEY") # We already set this up in Model phase
+    if not tmdb_api_key:
+        raise HTTPException(status_code=500, detail="TMDB API key not configured")
+
+    url = f"https://api.themoviedb.org/3/movie/popular?api_key={tmdb_api_key}&language=en-US&page=1"
+    
+    try:
+        response = requests.get(url)
+        response.raise_for_status() # Raise an exception for bad status codes
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=502, detail=f"Error fetching from TMDB: {e}")
+
+@app.get("/movies/{movie_id}")
+def get_movie_details(movie_id: int):
+    tmdb_api_key = os.getenv("API_KEY")
+    if not tmdb_api_key:
+        raise HTTPException(status_code=500, detail="TMDB API key not configured")
+
+    url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key={tmdb_api_key}&language=en-US"
+    
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=502, detail=f"Error fetching from TMDB: {e}")

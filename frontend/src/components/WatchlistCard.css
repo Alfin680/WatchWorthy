@@ -1,0 +1,54 @@
+.watchlist-card {
+  background-color: var(--color-dark-blue);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative; /* Needed for the remove button */
+  transition: transform 0.3s ease;
+}
+
+.watchlist-card:hover {
+  transform: translateY(-5px);
+}
+
+.watchlist-card-poster {
+  width: 100%;
+  height: 250px; /* Smaller height than MovieCard */
+  background-color: #272242;
+}
+
+.watchlist-card-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.watchlist-card-title {
+  padding: 10px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.remove-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: rgba(229, 57, 53, 0.8);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.watchlist-card:hover .remove-button {
+  opacity: 1; /* Show button on hover */
+}

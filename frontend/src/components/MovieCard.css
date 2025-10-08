@@ -1,0 +1,57 @@
+.movie-card {
+  background-color: var(--color-dark-blue);
+  border-radius: 8px;
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--color-white);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.movie-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.movie-poster {
+  width: 100%;
+  height: 350px; /* Adjust height as needed */
+  background-color: #272242; /* Placeholder color */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--color-grey-text);
+}
+
+.movie-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.movie-info {
+  padding: 15px;
+}
+
+.movie-info h3 {
+  margin: 0 0 5px 0;
+  font-size: 1.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.movie-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--color-grey-text);
+  font-size: 0.9rem;
+}
+
+.movie-card.selected {
+  background-color: #363253; /* Using your specified 'dark-blue' color */
+  transform: translateY(-5px);
+  box-shadow: 0 0 15px rgba(0, 72, 253, 0.4); /* Glow effect with your bright blue */
+  border: 1px solid var(--color-bright-blue);
+}

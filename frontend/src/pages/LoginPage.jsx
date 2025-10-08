@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { loginUser } from '../services/api';
+import { useAuth } from '../context/useAuth'; // Correctly import the custom hook
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
@@ -8,13 +9,15 @@ const LoginPage = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth(); // Get the global login function from our context
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      await loginUser(username, password);
+      const data = await loginUser(username, password);
+      login(data.access_token); // Update the global state with the new token
       navigate('/'); // Redirect to the homepage on successful login
     } catch (err) {
       setError(err.detail || 'Failed to login. Please check your credentials.');
