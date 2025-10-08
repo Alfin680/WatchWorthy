@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import './Navbar.css';
-import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
 import { getCurrentUser } from '../services/api';
 
 const Navbar = () => {
   const { isLoggedIn, logout } = useAuth();
-  const [user, setUser] = useState(null); // Store the whole user object
-  const [searchQuery, setSearchQuery] = useState('');
+  const [user, setUser] = useState(null);
+  const [searchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('query') || '');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,11 +22,16 @@ const Navbar = () => {
           logout();
         }
       } else {
-        setUser(null); // Clear user data on logout
+        setUser(null);
       }
     };
     fetchUser();
   }, [isLoggedIn, logout]);
+
+  useEffect(() => {
+    // This syncs the search bar with the URL, useful for browser back/forward
+    setSearchQuery(searchParams.get('query') || '');
+  }, [searchParams]);
 
   const handleSearch = (e) => {
     if (e.key === 'Enter' && searchQuery.trim() !== '') {
@@ -63,9 +69,7 @@ const Navbar = () => {
           <>
             <Link to="/watchlist" className="watchlist-link">My Watchlist</Link>
             <div className="user-info">
-              {/* Display full name */}
               <span className="full-name">{user ? user.full_name : 'Loading...'}</span>
-              {/* Style logout as a link-like button */}
               <button onClick={handleLogout} className="logout-link">Logout</button>
             </div>
           </>

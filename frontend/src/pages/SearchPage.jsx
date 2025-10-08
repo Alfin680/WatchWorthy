@@ -4,28 +4,18 @@ import Navbar from '../components/Navbar';
 import MovieCard from '../components/MovieCard';
 import MovieDetails from '../components/MovieDetails';
 import { searchMovies } from '../services/api';
-import './SearchPage.css'; // Make sure you have created this CSS file
+import './SearchPage.css';
 
-// The full genre list from TMDB
 const genres = [
-    { "id": 28, "name": "Action" },
-    { "id": 12, "name": "Adventure" },
-    { "id": 16, "name": "Animation" },
-    { "id": 35, "name": "Comedy" },
-    { "id": 80, "name": "Crime" },
-    { "id": 99, "name": "Documentary" },
-    { "id": 18, "name": "Drama" },
-    { "id": 10751, "name": "Family" },
-    { "id": 14, "name": "Fantasy" },
-    { "id": 36, "name": "History" },
-    { "id": 27, "name": "Horror" },
-    { "id": 10402, "name": "Music" },
-    { "id": 9648, "name": "Mystery" },
-    { "id": 10749, "name": "Romance" },
-    { "id": 878, "name": "Science Fiction" },
-    { "id": 10770, "name": "TV Movie" },
-    { "id": 53, "name": "Thriller" },
-    { "id": 10752, "name": "War" },
+    { "id": 28, "name": "Action" }, { "id": 12, "name": "Adventure" },
+    { "id": 16, "name": "Animation" }, { "id": 35, "name": "Comedy" },
+    { "id": 80, "name": "Crime" }, { "id": 99, "name": "Documentary" },
+    { "id": 18, "name": "Drama" }, { "id": 10751, "name": "Family" },
+    { "id": 14, "name": "Fantasy" }, { "id": 36, "name": "History" },
+    { "id": 27, "name": "Horror" }, { "id": 10402, "name": "Music" },
+    { "id": 9648, "name": "Mystery" }, { "id": 10749, "name": "Romance" },
+    { "id": 878, "name": "Science Fiction" }, { "id": 10770, "name": "TV Movie" },
+    { "id": 53, "name": "Thriller" }, { "id": 10752, "name": "War" },
     { "id": 37, "name": "Western" }
 ];
 
@@ -36,24 +26,25 @@ const SearchPage = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('query');
 
-  // State for filters
-  const [year, setYear] = useState('');
+  const [startYear, setStartYear] = useState('');
+  const [endYear, setEndYear] = useState('');
   const [genre, setGenre] = useState('');
 
   useEffect(() => {
     if (query) {
       const fetchResults = async () => {
         setLoading(true);
-        setSelectedMovie(null); // Reset selection when filters change
+        setSelectedMovie(null);
         const genreId = genre ? parseInt(genre) : null;
-        const yearValue = year ? parseInt(year) : null;
-        const results = await searchMovies(query, yearValue, genreId);
+        const startYearValue = startYear ? parseInt(startYear) : null;
+        const endYearValue = endYear ? parseInt(endYear) : null;
+        const results = await searchMovies(query, startYearValue, endYearValue, genreId);
         setSearchResults(results);
         setLoading(false);
       };
       fetchResults();
     }
-  }, [query, year, genre]); // Re-fetch when query or filters change
+  }, [query, startYear, endYear, genre]);
 
   const handleMovieSelect = (movie) => {
     setSelectedMovie(prevMovie => (prevMovie && prevMovie.id === movie.id ? null : movie));
@@ -63,22 +54,18 @@ const SearchPage = () => {
     <div className="main-container">
       <Navbar />
       <main>
-        <h1>Search Results for "{query}"</h1>
-
-        <div className="filters-container">
-          <input
-            type="number"
-            placeholder="Year"
-            className="filter-input"
-            value={year}
-            onChange={(e) => setYear(e.target.value)}
-          />
-          <select className="filter-select" value={genre} onChange={(e) => setGenre(e.target.value)}>
-            <option value="">All Genres</option>
-            {genres.map(g => (
-              <option key={g.id} value={g.id}>{g.name}</option>
-            ))}
-          </select>
+        <div className="search-header">
+          <h1>Search Results for "{query}"</h1>
+          <div className="filters-container">
+            <input type="number" placeholder="From Year" className="filter-input" value={startYear} onChange={(e) => setStartYear(e.target.value)} />
+            <input type="number" placeholder="To Year" className="filter-input" value={endYear} onChange={(e) => setEndYear(e.target.value)} />
+            <select className="filter-select" value={genre} onChange={(e) => setGenre(e.target.value)}>
+              <option value="">All Genres</option>
+              {genres.map(g => (
+                <option key={g.id} value={g.id}>{g.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {loading ? (
@@ -101,7 +88,6 @@ const SearchPage = () => {
                 )}
               </div>
             </section>
-
             <aside className="details-container">
               <div className="details-wrapper">
                 <MovieDetails movie={selectedMovie} />

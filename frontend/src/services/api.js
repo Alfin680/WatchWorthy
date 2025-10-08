@@ -129,15 +129,12 @@ export const getCurrentUser = async () => {
   }
 };
 
-export const searchMovies = async (query, year = null, genreId = null) => {
+export const searchMovies = async (query, startYear = null, endYear = null, genreId = null) => {
   try {
     let url = `/movies/search?query=${encodeURIComponent(query)}`;
-    if (year) {
-      url += `&year=${year}`;
-    }
-    if (genreId) {
-      url += `&genre_id=${genreId}`;
-    }
+    if (startYear) url += `&start_year=${startYear}`;
+    if (endYear) url += `&end_year=${endYear}`;
+    if (genreId) url += `&genre_id=${genreId}`;
     
     const response = await api.get(url);
     return response.data.results;

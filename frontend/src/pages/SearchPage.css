@@ -17,3 +17,15 @@
 .filter-input::placeholder {
   color: var(--color-grey-text);
 }
+
+.search-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.filters-container {
+  display: flex;
+  gap: 15px;
+}

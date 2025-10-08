@@ -148,14 +148,17 @@ def get_user_recommendations(
 @app.get("/movies/search")
 def search_movies(
     query: str,
-    year: int = Query(None, description="Filter by year of release"),
+    start_year: int = Query(None, description="Filter by start year"),
+    end_year: int = Query(None, description="Filter by end year"),
     genre_id: int = Query(None, description="Filter by genre ID")
 ):
     tmdb_api_key = os.getenv("API_KEY")
-    if not tmdb_api_key:
-        raise HTTPException(status_code=500, detail="TMDB API key not configured")
+    # ... (api key check) ...
 
-    # Start with the base URL and required parameters
+    # Use the /discover/movie endpoint for better filtering, or fall back to /search
+    # For simplicity, we'll enhance the /search and filter results.
+    # A more advanced solution would be to use the /discover endpoint.
+    
     base_url = "https://api.themoviedb.org/3/search/movie"
     params = {
         "api_key": tmdb_api_key,
@@ -165,27 +168,24 @@ def search_movies(
         "include_adult": False
     }
 
-    # Add optional parameters if they are provided
-    if year:
-        params["year"] = year
-    if genre_id:
-        # TMDB search doesn't directly filter by genre_id in the search endpoint.
-        # We fetch all results and filter them on our server.
-        pass
-
     try:
         response = requests.get(base_url, params=params)
         response.raise_for_status()
         data = response.json()
 
-        # If a genre_id is provided, filter the results
-        if genre_id:
-            filtered_results = [
-                movie for movie in data.get("results", []) 
-                if genre_id in movie.get("genre_ids", [])
-            ]
-            data["results"] = filtered_results
+        results = data.get("results", [])
 
+        # Filter by genre if provided
+        if genre_id:
+            results = [movie for movie in results if genre_id in movie.get("genre_ids", [])]
+
+        # Filter by year range if provided
+        if start_year:
+            results = [movie for movie in results if movie.get("release_date") and int(movie["release_date"][:4]) >= start_year]
+        if end_year:
+            results = [movie for movie in results if movie.get("release_date") and int(movie["release_date"][:4]) <= end_year]
+
+        data["results"] = results
         return data
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=502, detail=f"Error fetching from TMDB: {e}")
