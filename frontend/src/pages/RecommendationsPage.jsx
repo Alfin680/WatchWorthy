@@ -31,7 +31,7 @@ const RecommendationsPage = () => {
 
         setRecommendations(detailedRecs.filter(Boolean));
       } catch (err) {
-        setError("Could not fetch recommendations. Please try again later.");
+        setError("Could not fetch recommendations. Please try again later.",err);
       } finally {
         setLoading(false);
       }
