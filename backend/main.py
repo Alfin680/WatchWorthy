@@ -25,10 +25,10 @@ def get_db():
 app = FastAPI()
 
 # --- CORS Configuration ---
-origins = [
-    "http://localhost:3000",
-    "http://localhost:5173",    
-]
+origins_str = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000")
+origins = [origin.strip() for origin in origins_str.split(",")]
+
+print(f"✅ Allowing CORS for origins: {origins}") # Helpful for debugging
 
 app.add_middleware(
     CORSMiddleware,
