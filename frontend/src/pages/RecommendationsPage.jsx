@@ -12,33 +12,49 @@ const RecommendationsPage = () => {
   const [selectedMovie, setSelectedMovie] = useState(null); // Add state for selection
 
   useEffect(() => {
-    const fetchRecommendations = async () => {
-      try {
-        const watchlist = await getWatchlist();
-        if (watchlist.length === 0) {
-          setError("Your watchlist is empty. Add a movie to get recommendations.");
-          setLoading(false);
-          return;
-        }
-
-        const latestMovie = watchlist[watchlist.length - 1];
-        setSourceMovie(latestMovie);
-
-        const recs = await getRecommendations(latestMovie.movie_title);
-        const detailedRecs = await Promise.all(
-          recs.map(rec => getMovieDetails(rec.id))
-        );
-
-        setRecommendations(detailedRecs.filter(Boolean));
-      } catch (err) {
-        setError("Could not fetch recommendations. Please try again later.",err);
-      } finally {
+  const fetchRecommendations = async () => {
+    // Make sure user is logged in before fetching
+    if (!localStorage.getItem('userToken')) {
+        setError("You must be logged in to get recommendations.");
         setLoading(false);
-      }
-    };
+        return;
+    }
 
-    fetchRecommendations();
-  }, []);
+    try {
+      const watchlist = await getWatchlist();
+      if (watchlist.length === 0) {
+        setError("Your watchlist is empty. Add a movie to get recommendations.");
+        setLoading(false);
+        return;
+      }
+
+      // We'll now use the robust backend endpoint that finds a suitable movie
+      const data = await getRecommendations();
+      
+      // IMPORTANT: Check if the backend returned recommendations
+      if (data && data.recommendations && data.recommendations.length > 0) {
+        setSourceMovie({ movie_title: data.source_movie });
+
+        const detailedRecs = await Promise.all(
+          data.recommendations.map(rec => getMovieDetails(rec.id))
+        );
+        
+        setRecommendations(detailedRecs.filter(Boolean)); // Filter out any failed detail fetches
+      } else {
+        // This handles cases where the backend couldn't find a match
+        setError("Could not generate recommendations from your current watchlist.");
+      }
+    } catch (err) {
+      // This will now only catch actual network or server errors
+      setError("An error occurred while fetching recommendations. Please try again later.");
+      console.error("Recommendation fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchRecommendations();
+}, []);
 
   // Handler to set the selected movie
   const handleMovieSelect = (movie) => {
