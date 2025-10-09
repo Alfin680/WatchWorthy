@@ -13,11 +13,14 @@ def get_user_by_email(db: Session, email: str): # Add this new function
     return db.query(models.User).filter(models.User.email == email).first()
 
 def create_user(db: Session, user: schemas.UserCreate):
+    print("--- SIGNUP STEP 5: Hashing password ---")
     hashed_password = get_password_hash(user.password)
+    
+    print("--- SIGNUP STEP 6: Creating and committing to DB ---")
     db_user = models.User(
         username=user.username,
-        email=user.email, # Add this
-        full_name=user.full_name, # Add this
+        email=user.email,
+        full_name=user.full_name,
         hashed_password=hashed_password
     )
     db.add(db_user)

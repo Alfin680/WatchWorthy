@@ -58,15 +58,22 @@ def read_root():
 
 @app.post("/users/", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    print("--- SIGNUP STEP 1: Received request ---")
+    
+    print("--- SIGNUP STEP 2: Checking for existing username ---")
     db_user_by_username = crud.get_user_by_username(db, username=user.username)
     if db_user_by_username:
         raise HTTPException(status_code=400, detail="Username already registered")
     
-    db_user_by_email = crud.get_user_by_email(db, email=user.email) # Add this check
-    if db_user_by_email: # Add this check
-        raise HTTPException(status_code=400, detail="Email already registered") # Add this check
+    print("--- SIGNUP STEP 3: Checking for existing email ---")
+    db_user_by_email = crud.get_user_by_email(db, email=user.email)
+    if db_user_by_email:
+        raise HTTPException(status_code=400, detail="Email already registered")
 
-    return crud.create_user(db=db, user=user)
+    print("--- SIGNUP STEP 4: Calling CRUD function to create user ---")
+    new_user = crud.create_user(db=db, user=user)
+    print("--- SIGNUP STEP 7: CRUD function finished, returning user ---")
+    return new_user
 
 # ... (rest of the file)
 @app.get("/users/me/", response_model=schemas.User)

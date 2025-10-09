@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create an axios instance with the base URL of your backend
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000',
+  baseURL: 'https://watchworthy-api.onrender.com',
 });
 
 // We can create an interceptor to automatically add the token to every request

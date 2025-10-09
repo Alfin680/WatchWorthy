@@ -47,7 +47,7 @@ def get_movie_details(movie_id, api_key):
 # --- Main script execution ---
 
 # Step 1: Fetch initial list of popular movies
-movies_df = fetch_movie_data(API_KEY, num_pages=500)
+movies_df = fetch_movie_data(API_KEY, num_pages=150)
 
 if not movies_df.empty:
     # Step 2: Fetch details for each movie
