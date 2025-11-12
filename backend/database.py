@@ -17,6 +17,8 @@ if DATABASE_URL:
     # If DATABASE_URL is found, use it (for production)
     # Replace "postgres://" with "postgresql://" for SQLAlchemy compatibility
     SQLALCHEMY_DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    if "?sslmode=" not in SQLALCHEMY_DATABASE_URL:
+    SQLALCHEMY_DATABASE_URL += "?sslmode=require"
 else:
     # If not found, build the URL from individual .env variables (for local development)
     DB_USER = os.getenv("DB_USER")
